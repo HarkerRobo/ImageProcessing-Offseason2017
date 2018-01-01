@@ -18,14 +18,29 @@ logger.addHandler(sh)
 
 gs.delete_socket()
 
-pipeline = gs.pipeline(
-    gs.RaspiCam(vflip=True, hFlip=True, expmode=6, framerate=30, ec=10,
-                awb=False, ar=1, ab=2.5, width=640, height=480) +
+print(
+# gs.RaspiCam(vflip=True, hFlip=True, expmode=6, framerate=30, ec=10,
+    #             awb=False, ar=1, ab=2.5, width=640, height=480) +
+    gs.Webcam(device='/dev/video2', width=320, height=240, framerate=30) +
     gs.PipelinePart('videoconvert') +
-    gs.Tee('t',
-           gs.Valve('valve') + gs.H264Video() + gs.H264Stream(),
-           gs.PipelinePart('videoscale ! video/x-raw, width=320, height=240') + gs.SHMSink()
-    )
+    # gs.Tee('t',
+    #        gs.Valve('valve') + gs.H264Video() + gs.H264Stream(),
+
+    # gs.PipelinePart('videoscale ! video/x-raw, width=320, height=240') +
+    gs.SHMSink()
+    # )
+)
+
+pipeline = gs.pipeline(
+    # gs.RaspiCam(vflip=True, hFlip=True, expmode=6, framerate=30, ec=10,
+    #             awb=False, ar=1, ab=2.5, width=640, height=480) +
+    gs.Webcam(device='/dev/video2', width=320, height=240, framerate=30) +
+    gs.PipelinePart('videoconvert') +
+    # gs.Tee('t',
+    #        gs.Valve('valve') + gs.H264Video() + gs.H264Stream(),
+    # gs.PipelinePart('videoscale ! video/x-raw, width=320, height=240') +
+    gs.SHMSink()
+    # )
 )
 
 
@@ -50,8 +65,8 @@ vc.start()
 debuggingThread.stop()
 
 sock, clis = networking.server.create_socket_and_client_list(port=6000)
-gsthandler = networking.create_gst_handler(pipeline, gs.SRC_NAME, 'valve',
-                                           gs.UDP_NAME)
+gsthandler = networking.create_gst_handler(pipeline, gs.SRC_NAME, None, #'valve',
+                                           None) #gs.UDP_NAME)
 cntset, cnthandler = networking.create_cnt_handler(gsthandler)
 
 acceptThread = threading.Thread(target=networking.server.AcceptClients,
